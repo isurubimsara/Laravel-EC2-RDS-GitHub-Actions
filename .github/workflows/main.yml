@@ -26,6 +26,7 @@ jobs:
 
       - name: Set up Environment Variables
         run: |
+         echo "MY_VARIABLE=$(cat .env)" >> $GITHUB_ENV
           echo "DB_CONNECTION=mysql" >> $GITHUB_ENV
           echo "DB_HOST=db-demo.c13sf506esdd.us-east-1.rds.amazonaws.com" >> $GITHUB_ENV
           echo "DB_PORT=3306" >> $GITHUB_ENV
