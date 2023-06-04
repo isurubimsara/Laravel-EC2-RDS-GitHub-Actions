@@ -35,7 +35,7 @@ jobs:
         with:
           args: -avz --delete --exclude=".env" --exclude="vendor/" --exclude="node_modules/" --exclude="storage/"
           src: .
-          dest: ubuntu@YOUR_EC2_INSTANCE_IP:/var/www/html
+          dest: ubuntu@100.26.47.28:/var/www/html
       
       - name: Connect to EC2 Instance
         uses: appleboy/ssh-action@master
