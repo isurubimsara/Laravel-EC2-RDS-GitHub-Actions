@@ -25,7 +25,8 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         with:
-          args: |
-            --channel '#assignment'
-            --status "${{ steps.check_job.outputs.jobStatus }}"
-            --text "The deployment was ${{ steps.check_job.outputs.jobStatus }}."
+          status: ${{ steps.check_job.outputs.jobStatus }}
+          text: "The deployment was ${{ steps.check_job.outputs.jobStatus }}."
+          channel: '#assignment'
+          author_name: '8398a7@action-slack'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
