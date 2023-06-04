@@ -11,22 +11,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check Job Outcome
-        id: check_job
+      - name: Get Job Steps
+        id: get_steps
         run: |
-          if [[ ${{ job.status }} == 'success' ]]; then
-            echo "::set-output name=jobStatus::success"
-          else
-            echo "::set-output name=jobStatus::failure"
-          fi
-
+          echo "::set-output name=stepsCompleted::$(echo ${{ toJson(steps) }} | jq -r '.[] | select(.conclusion == "success") | .name')"
+          echo "::set-output name=stepsFailed::$(echo ${{ toJson(steps) }} | jq -r '.[] | select(.conclusion == "failure") | .name')"
+          
       - name: Send Slack Notification
         uses: 8398a7/action-slack@v3
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         with:
-          status: ${{ steps.check_job.outputs.jobStatus }}
-          text: "The deployment was ${{ steps.check_job.outputs.jobStatus }}."
+          status: ${{ needs.deploy.outputs.rsyncStatus == 'success' ? 'success' : 'failure' }}
+          text: |
+             The deployment was ${{ needs.deploy.outputs.rsyncStatus == 'success' ? 'successful' : 'unsuccessful' }}.
+             Steps Completed: ${{ steps.get_steps.outputs.stepsCompleted }}
+             Steps Failed: ${{ steps.get_steps.outputs.stepsFailed }}
           channel: '#assignment'
           author_name: '8398a7@action-slack'
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          if: always()
