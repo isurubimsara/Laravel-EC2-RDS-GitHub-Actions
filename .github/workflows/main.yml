@@ -27,34 +27,18 @@ jobs:
       - name: Set up Environment Variables
         run: |
           echo "DB_CONNECTION=mysql" >> $GITHUB_ENV
-          echo "DB_HOST=${{ env.YOUR_RDS_ENDPOINT }}" >> $GITHUB_ENV
+          echo "DB_HOST=db-demo.c13sf506esdd.us-east-1.rds.amazonaws.com" >> $GITHUB_ENV
           echo "DB_PORT=3306" >> $GITHUB_ENV
-          echo "DB_DATABASE=${{ env.YOUR_DB_NAME }}" >> $GITHUB_ENV
-          echo "DB_USERNAME=${{ env.YOUR_DB_USERNAME }}" >> $GITHUB_ENV
-          echo "DB_PASSWORD=${{ env.YOUR_DB_PASSWORD }}" >> $GITHUB_ENV
+          echo "DB_DATABASE=laravel_db" >> $GITHUB_ENV
+          echo "DB_USERNAME=ubuntu" >> $GITHUB_ENV
+          echo "DB_PASSWORD=adminpass" >> $GITHUB_ENV
 
-      - name: Rsync to EC2
-        uses: jshmrtn/rsync-ssh@v1
+      - name: Laravel Rsync Deploy
+        uses: SHSharkar/Laravel-Rsync-Deploy@master
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-        with:
-          args: |
-            --rsync-path="sudo rsync" \
-            --exclude=.env \
-            --exclude=node_modules/ \
-            --exclude=vendor/ \
-            --delete \
-            ${{ github.workspace }}/ ubuntu@100.26.47.28:/var/www/html
-
-      - name: Connect to EC2 Instance
-        uses: appleboy/ssh-action@master
-        with:
-          host: 100.26.47.28
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-          script: |
-            cd /var/www/html
-            php artisan migrate --force
-            php artisan config:cache
-            php artisan route:cache
-            sudo service apache2 restart
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          ARGS: "--ignore-times --compress --verbose --exclude=.git --exclude=.github --exclude=node_modules --no-perms --no-owner --no-group --recursive"
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+          REMOTE_HOST_PORT: ${{ secrets.REMOTE_HOST_PORT }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          TARGET_DIRECTORY: ${{ secrets.TARGET_DIRECTORY }}
