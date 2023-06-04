@@ -11,23 +11,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Get Job Steps
-        id: get_steps
+      - name: Check Job Outcome
+        id: check_job
         run: |
-          echo "::set-output name=stepsCompleted::$(echo ${{ toJson(steps) }} | jq -r '.[] | select(.conclusion == "success") | .name')"
-          echo "::set-output name=stepsFailed::$(echo ${{ toJson(steps) }} | jq -r '.[] | select(.conclusion == "failure") | .name')"
-          
+          if [[ ${{ job.status }} == 'success' ]]; then
+            echo "::set-output name=jobStatus::success"
+          else
+            echo "::set-output name=jobStatus::failure"
+          fi
+
       - name: Send Slack Notification
         uses: 8398a7/action-slack@v3
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         with:
-          status: ${{ needs.deploy.outputs.rsyncStatus == 'success' ? 'success' : 'failure' }}
-          text: |
-             The deployment was ${{ needs.deploy.outputs.rsyncStatus == 'success' ? 'successful' : 'unsuccessful' }}.
-             Steps Completed: ${{ steps.get_steps.outputs.stepsCompleted }}
-             Steps Failed: ${{ steps.get_steps.outputs.stepsFailed }}
+          status: ${{ job.status }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took,pullRequest # selectable (default: repo,message)
+        #   status: ${{ steps.check_job.outputs.jobStatus }}
+        #   text: "The deployment was ${{ steps.check_job.outputs.jobStatus }}."
           channel: '#assignment'
           author_name: '8398a7@action-slack'
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          if: always()
+
+       
+        # uses: 8398a7/action-slack@v3
+        #  with:
+        #     status: ${{ job.status }}
+        #     fields: repo,message,commit,author,action,eventName,ref,workflow,job,took,pullRequest # selectable (default: repo,message)
+        #     env:
+        #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
+        #     if: always() # Pick up events even if the job fails or is canceled.
