@@ -13,13 +13,12 @@ jobs:
     steps:
       - name: Check Job Outcome
         id: check_job
-        uses: actions/github-script@v4
-        with:
-          script: |
-            const conclusion = github.event.workflow_run.conclusion;
-            const jobStatus = conclusion === 'success' ? 'successful' : 'unsuccessful';
-            console.log(jobStatus);
-            console.log(conclusion);
+        run: |
+          if [[ ${{ job.status }} == 'success' ]]; then
+            echo "::set-output name=jobStatus::successful"
+          else
+            echo "::set-output name=jobStatus::unsuccessful"
+          fi
 
       - name: Send Slack Notification
         uses: 8398a7/action-slack@v3
@@ -29,4 +28,4 @@ jobs:
           args: |
             --channel '#assignment'
             --status "${{ steps.check_job.outputs.jobStatus }}"
-            --text "The deployment was ${{ steps.check_job.outputs.jobStatus }}.\nConclusion: ${{ steps.check_job.outputs.conclusion }}"
+            --text "The deployment was ${{ steps.check_job.outputs.jobStatus }}."
