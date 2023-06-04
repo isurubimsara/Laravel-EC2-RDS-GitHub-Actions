@@ -14,7 +14,7 @@ jobs:
       - name: Check Job Outcome
         id: check_job
         run: |
-          if [[ ${{ job.conclution }} == 'success' ]]; then
+          if [[ ${{ job.outcome }} == 'success' ]]; then
             echo "::set-output name=jobStatus::success"
           else
             echo "::set-output name=jobStatus::failure"
