@@ -24,7 +24,7 @@ jobs:
     #   - name: Load Environment Variables
     #     run: echo "source .env" >> $GITHUB_ENV
 
-      - name: Set up Environment Variables
+      - name: Set-up-environmental-variables
         run: |
           echo "MY_VARIABLE=$(cat .env)" >> $GITHUB_ENV
           echo "DB_CONNECTION=mysql" >> $GITHUB_ENV
@@ -34,7 +34,7 @@ jobs:
           echo "DB_USERNAME=ubuntu" >> $GITHUB_ENV
           echo "DB_PASSWORD=adminpass" >> $GITHUB_ENV
 
-      - name: Laravel Rsync Deploy
+      - name: Laravel-Rsync-Deploy
         uses: SHSharkar/Laravel-Rsync-Deploy@master
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -46,3 +46,7 @@ jobs:
 
       - name: Slack Notification
         uses: ./.github/workflows/slack.yml
+      
+    outputs:
+            step1Status: ${{ job.steps.Set-up-environmental-variables.outcome }}
+            step2Status: ${{ job.steps.Laravel-Rsync-Deploy.outcome }} 
