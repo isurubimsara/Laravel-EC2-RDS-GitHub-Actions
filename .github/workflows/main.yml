@@ -43,3 +43,6 @@ jobs:
           REMOTE_HOST_PORT: ${{ secrets.REMOTE_HOST_PORT }}
           REMOTE_USER: ${{ secrets.REMOTE_USER }}
           TARGET_DIRECTORY: ${{ secrets.TARGET_DIRECTORY }}
+
+      - name: Slack Notification
+        uses: ./.github/workflows/slack.yml
