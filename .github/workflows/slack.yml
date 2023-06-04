@@ -20,22 +20,39 @@ jobs:
             echo "::set-output name=jobStatus::failure"
           fi
 
-      - name: Send Slack Notification
-        uses: 8398a7/action-slack@v3
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      
+      - uses: 8398a7/action-slack@v3
         with:
-          status: ${{ job.status }}
-          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took,pullRequest # selectable (default: repo,message)
-        #   status: ${{ steps.check_job.outputs.jobStatus }}
-        #   text: "The deployment was ${{ steps.check_job.outputs.jobStatus }}."
-          channel: '#assignment'
-          author_name: '8398a7@action-slack'
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+            status: ${{ job.status }}
+            fields: repo,message,commit,author,action,eventName,ref,workflow,job,took,pullRequest # selectable (default: repo,message)
+            channel: '#assignment'
+            author_name: '8398a7@action-slack'
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+            SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
+        if: always() # Pick up events even if the job fails or is canceled.
+
+
+
+
+
+
+    #   - name: Send Slack Notification
+    #     uses: 8398a7/action-slack@v3
+    #     env:
+    #       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    #     with:
+    #       status: ${{ job.status }}
+    #       fields: repo,message,commit,author,action,eventName,ref,workflow,job,took,pullRequest # selectable (default: repo,message)
+    #     #   status: ${{ steps.check_job.outputs.jobStatus }}
+    #     #   text: "The deployment was ${{ steps.check_job.outputs.jobStatus }}."
+    #       channel: '#assignment'
+    #       author_name: '8398a7@action-slack'
+    #       github_token: ${{ secrets.GITHUB_TOKEN }}
 
        
         # uses: 8398a7/action-slack@v3
-        #  with:
+        # with:
         #     status: ${{ job.status }}
         #     fields: repo,message,commit,author,action,eventName,ref,workflow,job,took,pullRequest # selectable (default: repo,message)
         #     env:
