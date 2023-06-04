@@ -47,6 +47,3 @@ jobs:
       - name: Slack Notification
         uses: ./.github/workflows/slack.yml
       
-    outputs:
-            step1Status: ${{ job.steps.Set-up-environmental-variables.outcome }}
-            step2Status: ${{ job.steps.Laravel-Rsync-Deploy.outcome }} 
