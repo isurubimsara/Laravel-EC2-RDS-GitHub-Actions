@@ -1,31 +1,32 @@
 name: Slack Notification
 
 on:
-  push:
-    branches:
-      - master
+  workflow_run:
+    workflows: ["Laravel Deployment"]
+    types:
+      - completed
 
 jobs:
   notify:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check Deployment Status
-        id: deployment_status
-        uses: actions/checkout@v2
+      - name: Check Job Outcome
+        id: check_job
+        uses: actions/github-script@v4
+        with:
+          script: |
+            const conclusion = github.event.workflow_run.conclusion;
+            const jobStatus = conclusion === 'success' ? 'successful' : 'unsuccessful';
+            console.log(jobStatus);
+            console.log(conclusion);
 
       - name: Send Slack Notification
-        uses: rtCamp/action-slack-notify@v3
+        uses: 8398a7/action-slack@v3
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         with:
-          status: ${{ job.status }}
-          text: |
-            :rocket: *Deployment Status*
-
-            *Repository:* ${{ github.repository }}
-            *Branch:* ${{ github.ref }}
-            *Commit:* ${{ github.sha }}
-            *Status:* ${{ job.status }}
-            *Environment:* Production
-            *Deployment Time:* ${{ github.run_duration }}
+          args: |
+            --channel '#assignment'
+            --status "${{ steps.check_job.outputs.jobStatus }}"
+            --text "The deployment was ${{ steps.check_job.outputs.jobStatus }}.\nConclusion: ${{ steps.check_job.outputs.conclusion }}"
