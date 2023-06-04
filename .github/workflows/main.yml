@@ -8,39 +8,48 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
-      
+
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: 8.0
-      
+
       - name: Install Composer Dependencies
         run: composer install --no-interaction --no-scripts --prefer-dist
-      
+
+      - name: Load Environment Variables
+        run: echo "source .env" >> $GITHUB_ENV
+
       - name: Set up Environment Variables
         run: |
           echo "DB_CONNECTION=mysql" >> $GITHUB_ENV
-          echo "DB_HOST=YOUR_RDS_ENDPOINT" >> $GITHUB_ENV
+          echo "DB_HOST=${{ env.YOUR_RDS_ENDPOINT }}" >> $GITHUB_ENV
           echo "DB_PORT=3306" >> $GITHUB_ENV
-          echo "DB_DATABASE=YOUR_DB_NAME" >> $GITHUB_ENV
-          echo "DB_USERNAME=YOUR_DB_USERNAME" >> $GITHUB_ENV
-          echo "DB_PASSWORD=YOUR_DB_PASSWORD" >> $GITHUB_ENV
-      
-      - name: Sync Code to EC2 Instance
-        uses: appleboy/rsync@v2
+          echo "DB_DATABASE=${{ env.YOUR_DB_NAME }}" >> $GITHUB_ENV
+          echo "DB_USERNAME=${{ env.YOUR_DB_USERNAME }}" >> $GITHUB_ENV
+          echo "DB_PASSWORD=${{ env.YOUR_DB_PASSWORD }}" >> $GITHUB_ENV
+
+      - name: Rsync to EC2
+        uses: jshmrtn/rsync-ssh@v1
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
         with:
-          args: -avz --delete --exclude=".env" --exclude="vendor/" --exclude="node_modules/" --exclude="storage/"
-          src: .
-          dest: ubuntu@100.26.47.28:/var/www/html
-      
+          args: |
+            --rsync-path="sudo rsync" \
+            --exclude=.env \
+            --exclude=node_modules/ \
+            --exclude=vendor/ \
+            --delete \
+            ${{ github.workspace }}/ ubuntu@100.26.47.28:/var/www/html
+
       - name: Connect to EC2 Instance
         uses: appleboy/ssh-action@master
         with:
-          host: 100.26.47.28P
+          host: 100.26.47.28
           username: ubuntu
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           script: |
