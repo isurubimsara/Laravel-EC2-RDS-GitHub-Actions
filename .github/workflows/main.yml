@@ -1,2 +1,51 @@
 name: Laravel Deployment
 
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.0
+      
+      - name: Install Composer Dependencies
+        run: composer install --no-interaction --no-scripts --prefer-dist
+      
+      - name: Set up Environment Variables
+        run: |
+          echo "DB_CONNECTION=mysql" >> $GITHUB_ENV
+          echo "DB_HOST=YOUR_RDS_ENDPOINT" >> $GITHUB_ENV
+          echo "DB_PORT=3306" >> $GITHUB_ENV
+          echo "DB_DATABASE=YOUR_DB_NAME" >> $GITHUB_ENV
+          echo "DB_USERNAME=YOUR_DB_USERNAME" >> $GITHUB_ENV
+          echo "DB_PASSWORD=YOUR_DB_PASSWORD" >> $GITHUB_ENV
+      
+      - name: Sync Code to EC2 Instance
+        uses: appleboy/rsync@v2
+        with:
+          args: -avz --delete --exclude=".env" --exclude="vendor/" --exclude="node_modules/" --exclude="storage/"
+          src: .
+          dest: ubuntu@YOUR_EC2_INSTANCE_IP:/var/www/html
+      
+      - name: Connect to EC2 Instance
+        uses: appleboy/ssh-action@master
+        with:
+          host: 100.26.47.28P
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/html
+            php artisan migrate --force
+            php artisan config:cache
+            php artisan route:cache
+            sudo service apache2 restart
