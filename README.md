@@ -1,65 +1,66 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Continuous Deployment Pipeline for Laravel Application on EC2 Instance
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This repository contains the necessary configurations and instructions to set up a continuous deployment pipeline using GitHub Actions to deploy a Laravel application on an EC2 instance. This pipeline automates the deployment process, making it easier and more efficient to deploy updates to your application. ✨🚀
 
-## About Laravel
+## Prerequisites 📋
 
-HELLO This is a test app to test EC2 deployment
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Before setting up the deployment pipeline, make sure you have the following prerequisites:
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- AWS Account: You need an AWS account to create an EC2 instance and an RDS instance to deploy the Laravel application. ☁️
+- Laravel Application: Create a Laravel application on your local machine and ensure it is working correctly. 🌟
+- GitHub Repository: Create a repository on GitHub to host your Laravel application and store the deployment pipeline configurations. 📦
 
-## Learning Laravel
+## Steps 🚀
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Follow these steps to set up the continuous deployment pipeline:
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### 1. Create an AWS EC2 Instance 🖥️
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- Launch an EC2 instance with the appropriate configuration, such as an Ubuntu machine image and a t2.micro instance type.
+- Create a key pair and download the corresponding .pem file to access the EC2 instance later. 🔑
 
-## Laravel Sponsors
+### 2. Create an AWS RDS Instance 💾
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+- Create a private subnet group in the AWS RDS console.
+- Launch an RDS instance with the MySQL engine in a private subnet.
+- Ensure that the security group associated with the RDS instance allows inbound connections from the EC2 instance. 🛡️
 
-### Premium Partners
+### 3. Connect EC2 Instance and RDS Instance 🤝
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+- Connect remotely to the EC2 instance using SSH and the downloaded .pem file.
+- Use the RDS console's "Connect" function to establish a connection between the EC2 and RDS instances by configuring security groups and inbound/outbound rules.
 
-## Contributing
+### 4. Install Required Libraries and Applications on EC2 📚
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- Connect to the EC2 instance using SSH and install the necessary dependencies: PHP, Composer, MySQL, and Apache2. These are required to deploy the Laravel application. 🛠️
 
-## Code of Conduct
+### 5. Set Up GitHub Actions Pipeline ⚙️
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- Inside your Laravel application directory, create a directory named `.github/workflows`.
+- Create a YAML file named `main.yml` inside the `.github/workflows` directory. This file will define the deployment pipeline.
+- Configure the `main.yml` file to trigger the pipeline when changes are pushed to the master branch of the GitHub repository.
+- Define the steps in the pipeline, including checking out the repository code, installing Composer dependencies, syncing the code to the EC2 instance using rsync, and running any necessary deployment scripts or commands.
+- Set up any required parameters and secret variables inside the GitHub repository's secrets and variables section. 🔧
 
-## Security Vulnerabilities
+### 6. Send Slack Webhook Messages 💬
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+- Create a Slack workspace and configure an incoming webhook integration.
+- Obtain the webhook URL provided by Slack.
+- Update the `slack.yml` file in the GitHub Actions pipeline to trigger a Slack message after the deployment process is completed. Set the webhook URL to the obtained Slack webhook URL.
 
-## License
+## Troubleshooting ❗
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+If you encounter any issues during the deployment pipeline setup, refer to the following solutions for common problems:
+
+1. **Deployment pipeline failure with PHP environment setup** 
+
+   - Ensure that the PHP version in the EC2 instance matches the required PHP version for your Laravel application.
+   - Update the PHP version in the `main.yml` file and the EC2 instance to a compatible version, such as 8.1.
+
+2. **Unable to connect to the EC2 instance with rsync command** 
+
+   - Convert the private key to the PEM format without a passphrase using the ssh-keygen command. This ensures that the key format is compatible with the rsync command.
+
+## Conclusion 
+
+By following the steps outlined in this readme, you can set up a continuous deployment pipeline using GitHub Actions to deploy your Laravel application on an EC2 instance. Enjoy seamless deployments and streamline your development workflow! 🚀✨
